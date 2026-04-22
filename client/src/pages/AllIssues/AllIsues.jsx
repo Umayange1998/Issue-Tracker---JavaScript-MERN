@@ -81,7 +81,7 @@ const resentIssues = [
 ];
 
 function AllIsues() {
-  return <IssueCatalog resentIssues={resentIssues} />;
+  return <IssueCatalog />;
 }
 
 export default AllIsues;

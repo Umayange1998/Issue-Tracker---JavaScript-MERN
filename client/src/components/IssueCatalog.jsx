@@ -19,10 +19,14 @@ import NewIssueButton from "./NewIssueButton";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../https/api.js";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
-function IssueCatalog() {
+function IssueCatalog({ onlyMyTasks = false }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const query = useSelector((state) => state.search.query.toLowerCase());
+  const user = useSelector((state) => state.user);
+  const userId = user._id;
   const navigate = useNavigate();
 
   const { data, isLoading, isError } = useQuery({
@@ -36,7 +40,15 @@ function IssueCatalog() {
     const priorityMatch =
       priorityFilter === "All" || issue.priority === priorityFilter;
 
-    return statusMatch && priorityMatch;
+    const searchMatch =
+      issue.title?.toLowerCase().includes(query) ||
+      issue.issueId?.toString().includes(query) ||
+      issue.priority?.toLowerCase().includes(query);
+
+    const myTaskMatch =
+      !onlyMyTasks || issue.assignedTo?.some((u) => u._id === userId);
+
+    return statusMatch && priorityMatch && searchMatch && myTaskMatch;
   });
 
   return (

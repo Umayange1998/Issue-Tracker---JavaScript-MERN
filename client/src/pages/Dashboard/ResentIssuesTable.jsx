@@ -7,6 +7,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Chip, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const recentIssuesData = [
   {
@@ -67,7 +68,14 @@ const recentIssuesData = [
 
 function ResentIssuesTable({ issues }) {
   const navigate = useNavigate();
+  const query = useSelector((state) => state.search.query.toLowerCase());
   const recentIssues = [...issues]
+    .filter((issue) => {
+      return (
+        issue.title?.toLowerCase().includes(query) ||
+        issue.issueId?.toString().includes(query)
+      );
+    })
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 10);
   return (

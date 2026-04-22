@@ -57,8 +57,25 @@ export const getIssueById = async (req, res) => {
 // Update Issue
 export const updateIssue = async (req, res) => {
   try {
+    const { status, assignedTo } = req.body;
+
+    const update = {};
+
+    if (status) update.status = status;
+
     const updatedIssue = await issueModel
-      .findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .findByIdAndUpdate(
+        req.params.id,
+        {
+          $set: update,
+          ...(assignedTo && {
+            $addToSet: {
+              assignedTo: assignedTo, // can be single or array
+            },
+          }),
+        },
+        { new: true },
+      )
       .populate("assignedTo", "fullName email");
 
     if (!updatedIssue) {

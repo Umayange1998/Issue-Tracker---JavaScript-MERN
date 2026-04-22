@@ -116,7 +116,7 @@ function SideNavBar() {
               <ListItemIcon>
                 <UserPlus size={20} color="#94A3B8" />
               </ListItemIcon>
-              <ListItemText primary={"Add User"} sx={{ color: "#fff" }} />
+              <ListItemText primary={"Add Member"} sx={{ color: "#fff" }} />
             </ListItemButton>
           </ListItem>
         )}

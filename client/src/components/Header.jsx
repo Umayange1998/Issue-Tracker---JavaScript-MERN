@@ -5,17 +5,13 @@ import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import InputBase from "@mui/material/InputBase";
-import Badge from "@mui/material/Badge";
-import MenuItem from "@mui/material/MenuItem";
-import Menu from "@mui/material/Menu";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import MailIcon from "@mui/icons-material/Mail";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import MoreIcon from "@mui/icons-material/MoreVert";
 import { useState } from "react";
 import Button from "@mui/material/Button";
+import { useDispatch, useSelector } from "react-redux";
+import { setSearchQuery } from "../Redux/Slices/searchSlice";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -53,25 +49,9 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 function Header() {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
-
-  const handleProfileMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    handleMobileMenuClose();
-  };
-
-  const handleMobileMenuOpen = (event) => {
-    setMobileMoreAnchorEl(event.currentTarget);
-  };
+  const userdata = useSelector((state) => state.user);
+  const dispatch = useDispatch();
+  const query = useSelector((state) => state.search.query);
 
   return (
     <Box
@@ -104,6 +84,8 @@ function Header() {
             <StyledInputBase
               placeholder="Search by issue title, ID or priority..."
               inputProps={{ "aria-label": "search" }}
+              value={query}
+              onChange={(e) => dispatch(setSearchQuery(e.target.value))}
             />
           </Search>
           <Box sx={{ flexGrow: 1 }} />
@@ -115,9 +97,11 @@ function Header() {
                 alignItems: "flex-end",
               }}
             >
-              <Typography sx={{ color: "#000000" }}>Test User</Typography>
+              <Typography sx={{ color: "#000000" }}>
+                {userdata.fullName}
+              </Typography>
               <Typography variant="caption" sx={{ color: "#555555" }}>
-                admin
+                {userdata.role}
               </Typography>
             </Box>
             <IconButton sx={{ p: 0, width: 40, height: 40 }}>

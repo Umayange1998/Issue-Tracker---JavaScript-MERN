@@ -21,6 +21,7 @@ function AddUser() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [emailerror, setEmailerror] = useState("");
   const [role, setRole] = useState("user");
   const { token } = useSelector((state) => state.user);
 
@@ -47,7 +48,7 @@ function AddUser() {
   });
   const handleSubmit = () => {
     if (!email.trim()) {
-      toast.error("Email is required");
+      setEmailerror("Email is required");
       return;
     }
 
@@ -128,6 +129,8 @@ function AddUser() {
                   bgcolor: "background.default",
                 }}
                 value={email}
+                error={!!emailerror}
+                helperText={emailerror}
                 onChange={(e) => setEmail(e.target.value)}
               />
               {/* {errors.title && (

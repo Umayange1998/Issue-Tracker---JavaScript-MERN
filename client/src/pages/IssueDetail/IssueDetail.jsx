@@ -20,6 +20,7 @@ import { api } from "../../https/api.js";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const issueData = {
   id: "1",
@@ -39,10 +40,11 @@ function stringAvatar(name) {
 
 function IssueDetail() {
   const [status, setStatus] = useState("Open");
+  const [member, setMember] = useState("");
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
+  const { role } = useSelector((state) => state.user);
   const { data: issue, isLoading } = useQuery({
     queryKey: ["issue", id],
     queryFn: async () => {
@@ -53,21 +55,29 @@ function IssueDetail() {
   useEffect(() => {
     if (issue) setStatus(issue.status);
   }, [issue]);
-
+  const { data: users } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const res = await api.get("/user/all");
+      return res.data.data;
+    },
+  });
   const updateStatusMutation = useMutation({
-    mutationFn: async (newStatus) => {
+    mutationFn: async ({ status, member }) => {
       return api.put(`/issue/update/${id}`, {
-        status: newStatus,
+        status,
+        assignedTo: member || null,
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(["issue", id]);
       queryClient.invalidateQueries(["issues"]);
-      toast.success("Update successfully!");
+      setMember("");
+      toast.success("Updated successfully!");
     },
   });
   const handleUpdate = () => {
-    updateStatusMutation.mutate(status);
+    updateStatusMutation.mutate({ status, member });
   };
   if (isLoading || !issue) {
     return <Typography sx={{ p: 5 }}>Loading...</Typography>;
@@ -98,7 +108,7 @@ function IssueDetail() {
             gap: 2,
           }}
         >
-          <Typography>#ISS-{issue.id}</Typography>
+          <Typography>{issue.issueId}</Typography>
           <Box
             sx={{
               bgcolor: "secondary.main",
@@ -223,7 +233,7 @@ function IssueDetail() {
                 }}
               >
                 <Typography sx={{ color: "text.secondary" }}>
-                  Synced with v2 migration. Patching now.
+                  Comments....
                 </Typography>
               </Box>
               <Typography sx={{ color: "text.secondary" }}>user</Typography>
@@ -295,6 +305,31 @@ function IssueDetail() {
               <MenuItem value={"In Progress"}>In Progress</MenuItem>
               <MenuItem value={"Resolved"}>Resolved</MenuItem>
             </Select>
+
+            <Typography
+              variant="caption"
+              sx={{
+                mt: 2,
+                color: "text.secondary",
+                fontWeight: "bold",
+                textAlign: "start",
+              }}
+            >
+              Assign member
+            </Typography>
+            <Select
+              value={member}
+              size="small"
+              onChange={(e) => setMember(e.target.value)}
+              fullWidth
+            >
+              {users?.map((u) => (
+                <MenuItem key={u._id} value={u._id}>
+                  {u.fullName}
+                </MenuItem>
+              ))}
+            </Select>
+
             <Button
               variant="contained"
               sx={{ bgcolor: "success.main" }}
@@ -336,6 +371,39 @@ function IssueDetail() {
               >
                 {issue.priority}
               </Typography>
+            </Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "start",
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  color: "text.secondary",
+                  fontFamily: "sans-serif",
+                  fontWeight: "bold",
+                }}
+              >
+                Assigned to
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {Array.isArray(issue?.assignedTo) &&
+                issue.assignedTo.length > 0 ? (
+                  issue.assignedTo.map((member) => (
+                    <Typography key={member._id}>{member.fullName}</Typography>
+                  ))
+                ) : (
+                  <Typography>None</Typography>
+                )}
+              </Box>
             </Box>
             <Box
               sx={{

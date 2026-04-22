@@ -6,6 +6,7 @@ import {
   updateUser,
   deleteUser,
   getMe,
+  getAllUsers,
 } from "../controllers/userController.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { isAdmin } from "../middleware/isAdmin.js";
@@ -16,7 +17,7 @@ const router = express.Router();
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/me", getMe);
-
+router.get("/all", getAllUsers);
 // Admin
 router.post("/create", authMiddleware, isAdmin, createUserByAdmin);
 router.put("/update/:id", authMiddleware, isAdmin, updateUser);

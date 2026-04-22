@@ -24,7 +24,7 @@ const resentIssues = [
   },
 ];
 function MyTasks() {
-  return <IssueCatalog resentIssues={resentIssues} />;
+  return <IssueCatalog onlyMyTasks={true} />;
 }
 
 export default MyTasks;
