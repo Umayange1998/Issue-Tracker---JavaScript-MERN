@@ -6,8 +6,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { Chip, Link } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
-const resentIssues = [
+const recentIssuesData = [
   {
     id: "1",
     title: "Fix mobile responsiveness on dashboard",
@@ -64,7 +65,11 @@ const resentIssues = [
   },
 ];
 
-function ResentIssuesTable() {
+function ResentIssuesTable({ issues }) {
+  const navigate = useNavigate();
+  const recentIssues = [...issues]
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .slice(0, 10);
   return (
     <TableContainer sx={{ maxHeight: 400 }}>
       <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
@@ -84,13 +89,13 @@ function ResentIssuesTable() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {resentIssues.map((issue) => (
+          {recentIssues.map((issue) => (
             <TableRow
-              key={issue.id}
+              key={issue._id}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
               <TableCell align="left" sx={{ color: "text.secondary" }}>
-                #ISS-10{issue.id}
+                {issue.issueId}
               </TableCell>
               <TableCell
                 component="th"
@@ -98,13 +103,12 @@ function ResentIssuesTable() {
                 sx={{ color: "text.primary", fontWeight: 500 }}
               >
                 <Link
-                  href="/issue"
+                  component="button"
                   underline="none"
+                  onClick={() => navigate(`/issue/${issue._id}`)}
                   sx={{
                     color: "text.primary",
-                    "&:hover": {
-                      color: "primary.main",
-                    },
+                    "&:hover": { color: "primary.main" },
                   }}
                 >
                   {issue.title}
@@ -165,7 +169,7 @@ function ResentIssuesTable() {
                 />
               </TableCell>
               <TableCell align="center" sx={{ color: "text.secondary" }}>
-                Just now
+                {new Date(issue.createdAt).toLocaleString()}
               </TableCell>
             </TableRow>
           ))}

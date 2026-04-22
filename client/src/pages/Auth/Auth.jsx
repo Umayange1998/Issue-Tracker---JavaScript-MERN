@@ -1,21 +1,115 @@
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
-import React from "react";
 import { useState } from "react";
+import validator from "validator";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { api } from "../../https/api";
+import { useNavigate } from "react-router-dom";
+import { setUser } from "../../Redux/Slices/userSlice";
+import { useDispatch } from "react-redux";
 
 function Auth() {
   const [isSignIn, setIsSignIn] = useState(true);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [data, setData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({});
+
+  // ---------------- VALIDATION ----------------
+  const validate = () => {
+    let tempErrors = {};
+
+    if (!isSignIn && validator.isEmpty(data.fullName)) {
+      tempErrors.fullName = "Full name is required";
+    }
+
+    if (!validator.isEmail(data.email)) {
+      tempErrors.email = "Valid email is required";
+    }
+
+    if (validator.isEmpty(data.password)) {
+      tempErrors.password = "Password is required";
+    } else if (!validator.isLength(data.password, { min: 6 })) {
+      tempErrors.password = "Password must be at least 6 characters";
+    }
+
+    setErrors(tempErrors);
+
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const loginMutation = useMutation({
+    mutationFn: (data) => api.post("/user/login", data),
+    onSuccess: (res) => {
+      const { token, user } = res.data;
+
+      localStorage.setItem("token", token);
+
+      dispatch(
+        setUser({
+          _id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          role: user.role,
+          token,
+        }),
+      );
+
+      toast.success("Login successful!");
+      navigate("/");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Login failed");
+    },
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: (data) => api.post("/user/register", data),
+    onSuccess: () => {
+      toast.success("Registration successful!");
+      setTimeout(() => {
+        setIsSignIn(true);
+      }, 1500);
+    },
+    onError: (err) => {
+      const message =
+        err?.response?.data?.message || err?.message || "Registration failed";
+
+      toast.error(message);
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!validate()) return;
+
+    if (isSignIn) {
+      loginMutation.mutate({
+        email: data.email,
+        password: data.password,
+      });
+    } else {
+      registerMutation.mutate(data);
+    }
+  };
+
   const handleChangeForm = () => {
     setIsSignIn((prev) => !prev);
-    // setGeneralError("");
-    // setRegEmailError("");
-    // setRegPasswordError("");
-    // setFullNameError("");
-    // setData({
-    //   name: "",
-    //   email: "",
-    //   password: "",
 
-    // });
+    // clear inputs
+    setData({
+      fullName: "",
+      email: "",
+      password: "",
+    });
+
+    // clear validation errors
+    setErrors({});
   };
   return (
     <Grid container>
@@ -116,12 +210,11 @@ function Auth() {
               <TextField
                 size="small"
                 placeholder="John Doe"
-                //   onChange={onChangeHandler}
-                name="name"
-                //   value={data.name}
+                value={data.fullName}
+                onChange={(e) => setData({ ...data, fullName: e.target.value })}
+                error={!!errors.fullName}
+                helperText={errors.fullName}
                 fullWidth
-                //   error={!!fullNameError}
-                //   helperText={fullNameError}
               />
             </Box>
           )}
@@ -134,12 +227,13 @@ function Auth() {
               size="small"
               placeholder="john@email.com"
               type="email"
-              // onChange={onChangeHandler}
+              value={data.email}
+              onChange={(e) => setData({ ...data, email: e.target.value })}
+              error={!!errors.email}
+              helperText={errors.email}
               name="email"
               // value={data.email}
               fullWidth
-              // error={!!regEmailError}
-              // helperText={regEmailError}
             />
           </Box>
           <Box>
@@ -151,12 +245,12 @@ function Auth() {
               size="small"
               placeholder="********"
               type="password"
-              // onChange={onChangeHandler}
+              value={data.password}
+              onChange={(e) => setData({ ...data, password: e.target.value })}
+              error={!!errors.password}
+              helperText={errors.password}
               name="password"
-              // value={data.password}
               fullWidth
-              // error={!!regPasswordError}
-              // helperText={regPasswordError}
             />
           </Box>
           <Button
@@ -167,7 +261,7 @@ function Auth() {
               py: 1.5,
               background: "linear-gradient(135deg, #2563EB, #1E40AF)",
             }}
-            // onClick={isSignIn ? onLoginHandler : onRegisterHandler}
+            onClick={handleSubmit}
           >
             {isSignIn ? "Sign In" : "Create Account"}
           </Button>

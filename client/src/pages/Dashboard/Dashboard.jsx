@@ -3,13 +3,27 @@ import { Box, Button, Divider, Grid, Paper, Typography } from "@mui/material";
 import StatCard from "./StatCard";
 import NewIssueButton from "../../components/NewIssueButton";
 import ResentIssuesTable from "./ResentIssuesTable";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../https/api";
 
 function Dashboard() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["issues"],
+    queryFn: () => api.get("/issue"),
+  });
+
+  const issues = data?.data || [];
+
+  const total = issues.length;
+  const open = issues.filter((i) => i.status === "Open").length;
+  const inProgress = issues.filter((i) => i.status === "In Progress").length;
+  const resolved = issues.filter((i) => i.status === "Resolved").length;
+
   const cards = [
-    { title: "Total Issues", color: "text.secondary", amount: 142 },
-    { title: "Open", color: "secondary.main", amount: 18 },
-    { title: "In Progress", color: "info.main", amount: 43 },
-    { title: "Resolved", color: "success.main", amount: 81 },
+    { title: "Total Issues", color: "text.secondary", amount: total },
+    { title: "Open", color: "secondary.main", amount: open },
+    { title: "In Progress", color: "info.main", amount: inProgress },
+    { title: "Resolved", color: "success.main", amount: resolved },
   ];
 
   return (
@@ -46,7 +60,7 @@ function Dashboard() {
           </Box>
           <Divider />
           <Box sx={{ width: "100%" }}>
-            <ResentIssuesTable />
+            <ResentIssuesTable issues={issues} />
           </Box>
         </Paper>
       </Grid>

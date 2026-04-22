@@ -14,8 +14,14 @@ import {
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../../https/api.js";
+import { useEffect } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
-const issue = {
+const issueData = {
   id: "1",
   title: "Fix mobile responsiveness on dashboard",
   description: " Lorem ipsum dolor sit amet, consectetur adipiscing. ",
@@ -33,9 +39,39 @@ function stringAvatar(name) {
 
 function IssueDetail() {
   const [status, setStatus] = useState("Open");
+  const { id } = useParams();
   const navigate = useNavigate();
-  const priority = "High";
+  const queryClient = useQueryClient();
 
+  const { data: issue, isLoading } = useQuery({
+    queryKey: ["issue", id],
+    queryFn: async () => {
+      const res = await api.get(`/issue/getissue/${id}`);
+      return res.data;
+    },
+  });
+  useEffect(() => {
+    if (issue) setStatus(issue.status);
+  }, [issue]);
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async (newStatus) => {
+      return api.put(`/issue/update/${id}`, {
+        status: newStatus,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["issue", id]);
+      queryClient.invalidateQueries(["issues"]);
+      toast.success("Update successfully!");
+    },
+  });
+  const handleUpdate = () => {
+    updateStatusMutation.mutate(status);
+  };
+  if (isLoading || !issue) {
+    return <Typography sx={{ p: 5 }}>Loading...</Typography>;
+  }
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
       <Grid
@@ -120,7 +156,11 @@ function IssueDetail() {
           />
           <Typography
             variant="h5"
-            sx={{ fontFamily: "Poppins", fontWeight: "bold" }}
+            sx={{
+              fontFamily: "Poppins",
+              fontWeight: "bold",
+              textAlign: "start",
+            }}
           >
             {issue.title}{" "}
           </Typography>
@@ -134,11 +174,23 @@ function IssueDetail() {
           >
             <Typography
               variant="caption"
-              sx={{ color: "text.secondary", fontWeight: "bold" }}
+              sx={{
+                color: "text.secondary",
+                fontWeight: "bold",
+                textAlign: "start",
+              }}
             >
               Specification
             </Typography>
-            <Typography>{issue.description}</Typography>
+            <Typography
+              sx={{
+                color: "text.secondary",
+                fontWeight: "bold",
+                textAlign: "start",
+              }}
+            >
+              {issue.description}
+            </Typography>
           </Box>
         </Paper>
         <Paper
@@ -190,13 +242,24 @@ function IssueDetail() {
             borderRadius: 4,
           }}
         >
-          <Typography sx={{ color: "text.secondary", fontWeight: "bold" }}>
+          <Typography
+            sx={{
+              color: "text.secondary",
+              fontWeight: "bold",
+              textAlign: "start",
+            }}
+          >
             Controls
           </Typography>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography
               variant="caption"
-              sx={{ mt: 2, color: "text.secondary", fontWeight: "bold" }}
+              sx={{
+                mt: 2,
+                color: "text.secondary",
+                fontWeight: "bold",
+                textAlign: "start",
+              }}
             >
               Change Status
             </Typography>
@@ -232,8 +295,12 @@ function IssueDetail() {
               <MenuItem value={"In Progress"}>In Progress</MenuItem>
               <MenuItem value={"Resolved"}>Resolved</MenuItem>
             </Select>
-            <Button variant="contained" sx={{ bgcolor: "success.main" }}>
-              Update
+            <Button
+              variant="contained"
+              sx={{ bgcolor: "success.main" }}
+              onClick={handleUpdate}
+            >
+              {updateStatusMutation.isPending ? "Updating..." : "Update"}
             </Button>
             <Divider />
             <Box
@@ -256,18 +323,18 @@ function IssueDetail() {
               <Typography
                 sx={{
                   color:
-                    priority === "High"
+                    issue.priority === "High"
                       ? "error.main"
-                      : priority === "Urgent"
+                      : issue.priority === "Urgent"
                         ? "urgent.main"
-                        : priority === "Medium"
+                        : issue.priority === "Medium"
                           ? "info.main"
-                          : priority === "Low"
+                          : issue.priority === "Low"
                             ? "#94A3B8"
                             : "grey.400",
                 }}
               >
-                {priority}
+                {issue.priority}
               </Typography>
             </Box>
             <Box
@@ -287,7 +354,11 @@ function IssueDetail() {
               >
                 CREATED
               </Typography>
-              <Typography>20/04/2026</Typography>
+              <Typography>
+                {issue?.createdAt
+                  ? new Date(issue.createdAt).toLocaleDateString()
+                  : "-"}
+              </Typography>
             </Box>
           </Box>
         </Paper>

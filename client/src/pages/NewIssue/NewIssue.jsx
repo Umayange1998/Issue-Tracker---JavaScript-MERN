@@ -12,13 +12,45 @@ import {
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../https/api.js";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 function NewIssue() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [priority, setPriority] = useState("Medium");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+
+  const [error, setError] = useState("");
+
+  const issueMutation = useMutation({
+    mutationFn: (data) => api.post("/issue", data),
+    onSuccess: () => {
+      toast.success("Issue created successfully!");
+      setTitle("");
+      setDescription("");
+      setPriority("Medium");
+      navigate("/allissues");
+    },
+    onError: (err) => {
+      toast.error(err.response?.data?.message || "Failed to create issue");
+    },
+  });
+  const handleSubmit = () => {
+    if (!title.trim()) {
+      setError("Title is required");
+      return;
+    }
+
+    issueMutation.mutate({
+      title,
+      priority,
+      status: "Open",
+      description,
+      assignedTo: [],
+    });
+  };
 
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
@@ -38,7 +70,7 @@ function NewIssue() {
             fontWeight: "bold",
           }}
         >
-          Issue Catalog
+          New Issue
         </Typography>
         <Button
           variant="outlined"
@@ -73,7 +105,14 @@ function NewIssue() {
             elevation={3}
             sx={{ p: 5, mt: 5, borderRadius: 4 }}
           >
-            <Box sx={{ mb: 3 }}>
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
                 Issue Title
               </Typography>
@@ -87,16 +126,20 @@ function NewIssue() {
                   borderRadius: 2,
                   bgcolor: "background.default",
                 }}
+                error={!!error}
+                helperText={error}
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
-              {/* {errors.title && (
-              <Typography color="error" variant="caption">
-                {errors.title}
-              </Typography>
-            )} */}
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
               <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
                 Description
               </Typography>
@@ -114,14 +157,22 @@ function NewIssue() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
-              {/* {errors.descrption && (
-              <Typography color="error" variant="caption">
-                {errors.descrption}
-              </Typography>
-            )} */}
             </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                  alignItems: "flex-start",
+                }}
+              >
                 Priority
               </Typography>
               <Select
@@ -146,9 +197,9 @@ function NewIssue() {
               fullWidth
               variant="contained"
               color="primary"
-              //   onClick={handleSubmit}
+              onClick={handleSubmit}
             >
-              {loading ? "Uploading..." : "+ Create New Issue"}
+              {issueMutation.isPending ? "Uploading..." : "+ Create New Issue"}
             </Button>
           </Paper>
         </Box>

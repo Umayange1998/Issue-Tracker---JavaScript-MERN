@@ -16,10 +16,28 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import NewIssueButton from "./NewIssueButton";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "../https/api.js";
+import { useNavigate } from "react-router-dom";
 
-function IssueCatalog({ resentIssues }) {
+function IssueCatalog() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const navigate = useNavigate();
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["issues"],
+    queryFn: () => api.get("/issue"),
+  });
+  const issues = data?.data || [];
+  const filteredIssues = issues.filter((issue) => {
+    const statusMatch = statusFilter === "All" || issue.status === statusFilter;
+
+    const priorityMatch =
+      priorityFilter === "All" || issue.priority === priorityFilter;
+
+    return statusMatch && priorityMatch;
+  });
 
   return (
     <Grid container spacing={2} sx={{ mt: 5, px: 5 }}>
@@ -93,13 +111,13 @@ function IssueCatalog({ resentIssues }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {resentIssues.map((issue) => (
+              {filteredIssues.map((issue) => (
                 <TableRow
                   key={issue.id}
                   sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                 >
                   <TableCell align="left" sx={{ color: "text.secondary" }}>
-                    #ISS-10{issue.id}
+                    {issue.issueId}
                   </TableCell>
                   <TableCell
                     component="th"
@@ -114,13 +132,12 @@ function IssueCatalog({ resentIssues }) {
                     }}
                   >
                     <Link
-                      href="/issue"
+                      component="button"
                       underline="none"
+                      onClick={() => navigate(`/issue/${issue._id}`)}
                       sx={{
                         color: "text.primary",
-                        "&:hover": {
-                          color: "primary.main",
-                        },
+                        "&:hover": { color: "primary.main" },
                       }}
                     >
                       {issue.title}
@@ -182,7 +199,11 @@ function IssueCatalog({ resentIssues }) {
                     />
                   </TableCell>
                   <TableCell align="center" sx={{ color: "text.secondary" }}>
-                    <Link href="/issue" underline="none">
+                    <Link
+                      component="button"
+                      underline="none"
+                      onClick={() => navigate(`/issue/${issue._id}`)}
+                    >
                       View
                     </Link>
                   </TableCell>

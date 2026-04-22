@@ -12,11 +12,52 @@ import {
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../https/api";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 function AddUser() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
+  const [role, setRole] = useState("user");
+  const { token } = useSelector((state) => state.user);
+
+  const createUserMutation = useMutation({
+    mutationFn: (data) =>
+      api.post("/user/create", data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+
+    onSuccess: () => {
+      toast.success("User invited successfully!");
+      setEmail("");
+      setRole("User");
+      setLoading(false);
+      navigate("/");
+    },
+
+    onError: (err) => {
+      setLoading(false);
+      toast.error(err.response?.data?.message || "Failed to add user");
+    },
+  });
+  const handleSubmit = () => {
+    if (!email.trim()) {
+      toast.error("Email is required");
+      return;
+    }
+
+    setLoading(true);
+
+    createUserMutation.mutate({
+      email,
+      role,
+    });
+  };
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
       <Grid
@@ -60,14 +101,20 @@ function AddUser() {
           px: 5,
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "start",
           mx: "auto",
         }}
       >
         <Box sx={{ width: "100%" }}>
           <Paper variant="outlined" sx={{ p: 5, mt: 5, borderRadius: 4 }}>
             <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                  textAlign: "start",
+                }}
+              >
                 Email
               </Typography>
               <TextField
@@ -89,13 +136,53 @@ function AddUser() {
               </Typography>
             )} */}
             </Box>
+            <Box
+              sx={{
+                mb: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+              }}
+            >
+              <Typography
+                sx={{
+                  fontWeight: "bold",
+                  color: "text.secondary",
+                  textAlign: "start",
+                }}
+              >
+                Role
+              </Typography>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={role}
+                label="Age"
+                size="small"
+                sx={{
+                  minWidth: "50%",
+                  borderRadius: 2,
+                  bgcolor: "background.default",
+                }}
+                onChange={(e) => setRole(e.target.value)}
+              >
+                <MenuItem value={"user"}>User</MenuItem>
+                <MenuItem value={"admin"}>Admin</MenuItem>
+              </Select>
+
+              {/* {errors.title && (
+              <Typography color="error" variant="caption">
+                {errors.title}
+              </Typography>
+            )} */}
+            </Box>
 
             <Button
               sx={{ mt: 2, py: 1.5, borderRadius: 2 }}
               fullWidth
               variant="contained"
               color="primary"
-              //   onClick={handleSubmit}
+              onClick={handleSubmit}
             >
               {loading ? "Updating..." : "+ Add New User"}
             </Button>
