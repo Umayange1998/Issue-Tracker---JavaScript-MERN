@@ -13,13 +13,10 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-function NewIssue() {
+function AddUser() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [priority, setPriority] = useState("Medium");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-
+  const [email, setEmail] = useState("");
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
       <Grid
@@ -38,7 +35,7 @@ function NewIssue() {
             fontWeight: "bold",
           }}
         >
-          Issue Catalog
+          Add New User
         </Typography>
         <Button
           variant="outlined"
@@ -50,7 +47,7 @@ function NewIssue() {
             height: 40,
             p: 0,
           }}
-          onClick={() => navigate(-1)}
+          onClick={() => navigate("/")}
         >
           <X />
         </Button>
@@ -68,14 +65,10 @@ function NewIssue() {
         }}
       >
         <Box sx={{ width: "100%" }}>
-          <Paper
-            // variant="outlined"
-            elevation={3}
-            sx={{ p: 5, mt: 5, borderRadius: 4 }}
-          >
+          <Paper variant="outlined" sx={{ p: 5, mt: 5, borderRadius: 4 }}>
             <Box sx={{ mb: 3 }}>
               <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
-                Issue Title
+                Email
               </Typography>
               <TextField
                 fullWidth
@@ -84,61 +77,17 @@ function NewIssue() {
                 sx={{
                   mb: 1,
                   mt: 1,
-                  borderRadius: 2,
+                  borderRadius: 4,
                   bgcolor: "background.default",
                 }}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
               {/* {errors.title && (
               <Typography color="error" variant="caption">
                 {errors.title}
               </Typography>
             )} */}
-            </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
-                Description
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                type="text"
-                sx={{
-                  mb: 1,
-                  mt: 1,
-                  borderRadius: 2,
-                  bgcolor: "background.default",
-                }}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-              {/* {errors.descrption && (
-              <Typography color="error" variant="caption">
-                {errors.descrption}
-              </Typography>
-            )} */}
-            </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography sx={{ fontWeight: "bold", color: "text.secondary" }}>
-                Priority
-              </Typography>
-              <Select
-                size="small"
-                sx={{
-                  minWidth: "50%",
-                  borderRadius: 2,
-                  bgcolor: "background.default",
-                }}
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-              >
-                <MenuItem value={"Urgent"}>Urgent</MenuItem>
-                <MenuItem value={"High"}>High</MenuItem>
-                <MenuItem value={"Medium"}>Medium</MenuItem>
-                <MenuItem value={"Low"}>Low</MenuItem>
-              </Select>
             </Box>
 
             <Button
@@ -148,7 +97,7 @@ function NewIssue() {
               color="primary"
               //   onClick={handleSubmit}
             >
-              {loading ? "Uploading..." : "+ Create New Issue"}
+              {loading ? "Updating..." : "+ Add New User"}
             </Button>
           </Paper>
         </Box>
@@ -157,4 +106,4 @@ function NewIssue() {
   );
 }
 
-export default NewIssue;
+export default AddUser;

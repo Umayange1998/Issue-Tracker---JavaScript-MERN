@@ -13,20 +13,21 @@ import {
   LayoutGrid,
   ListTodo,
   PlusCircle,
-  Search,
-  Settings,
-  User,
+  UserPlus,
+  NotebookPen,
 } from "lucide-react";
 import Typography from "@mui/material/Typography";
 
 function SideNavBar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const adduser = location.pathname === "/adduser";
 
   const navItems = [
     { label: "Dashboard", icon: LayoutGrid, path: "/" },
     { label: "All Issues", icon: ListTodo, path: "/allissues" },
     { label: "New Issue", icon: PlusCircle, path: "/new" },
+    { label: "My Tasks", icon: NotebookPen, path: "/my" },
   ];
   return (
     <Box
@@ -41,7 +42,11 @@ function SideNavBar() {
     >
       {" "}
       <Box sx={{ px: 6, py: 4 }}>
-        <Typography variant="h5" sx={{ color: "#ffffff" }}>
+        <Typography
+          onClick={() => navigate("/")}
+          variant="h5"
+          sx={{ color: "#ffffff", cursor: "pointer" }}
+        >
           IssueTracker
         </Typography>
       </Box>
@@ -80,6 +85,25 @@ function SideNavBar() {
             </ListItem>
           );
         })}
+        <ListItem
+          sx={{
+            backgroundColor: adduser ? "#334155" : "transparent",
+            color: adduser ? "#ffffff" : "#94A3B8",
+            borderLeft: adduser ? "3px solid #E2E8F0" : "3px solid transparent",
+
+            "&:hover": {
+              backgroundColor: "#33415580", // 50% opacity
+              color: "#ffffff",
+            },
+          }}
+        >
+          <ListItemButton onClick={() => navigate("/adduser")}>
+            <ListItemIcon>
+              <UserPlus size={20} color="#94A3B8" />
+            </ListItemIcon>
+            <ListItemText primary={"Add User"} sx={{ color: "#fff" }} />
+          </ListItemButton>
+        </ListItem>
       </List>
     </Box>
   );

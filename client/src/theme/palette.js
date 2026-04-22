@@ -16,7 +16,7 @@ const INFO = {
 };
 
 const SUCCESS = {
-  main: "#54D62C",
+  main: "#10B981",
   dark: "#229A16",
   contrastText: "#000000",
 };
@@ -34,8 +34,8 @@ const CLOSED = {
   main: "#6366F1",
   contrastText: "#ffffff",
 };
-const HGH = {
-  main: "#dd6b20",
+const URGENT = {
+  main: "#9c1414",
   contrastText: "#ffffff",
 };
 
@@ -49,10 +49,10 @@ const palette = {
   warning: WARNING,
   error: ERROR,
   closed: CLOSED,
-  high: HGH,
+  urgent: URGENT,
 
   background: {
-    default: "#ffffff",
+    default: "#F8FAFC",
     paper: "#ffffff",
   },
 

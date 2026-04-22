@@ -13,7 +13,7 @@ function Dashboard() {
   ];
 
   return (
-    <Grid container spacing={2} sx={{ mt: 5 }}>
+    <Grid container spacing={2} sx={{ mt: 5, px: 5 }}>
       <Grid size={12}>
         <Grid container spacing={2}>
           {cards.map((card) => {

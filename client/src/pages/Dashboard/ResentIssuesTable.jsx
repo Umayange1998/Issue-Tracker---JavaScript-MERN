@@ -5,7 +5,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
-import { Chip } from "@mui/material";
+import { Chip, Link } from "@mui/material";
 
 const resentIssues = [
   {
@@ -97,7 +97,18 @@ function ResentIssuesTable() {
                 scope="row"
                 sx={{ color: "text.primary", fontWeight: 500 }}
               >
-                {issue.title}
+                <Link
+                  href="/issue"
+                  underline="none"
+                  sx={{
+                    color: "text.primary",
+                    "&:hover": {
+                      color: "primary.main",
+                    },
+                  }}
+                >
+                  {issue.title}
+                </Link>
               </TableCell>
               <TableCell align="center">
                 <Chip
@@ -137,9 +148,9 @@ function ResentIssuesTable() {
                   sx={{
                     bgcolor:
                       issue.priority === "High"
-                        ? "warning.main"
+                        ? "error.main"
                         : issue.priority === "Urgent"
-                          ? "error.main"
+                          ? "urgent.main"
                           : issue.priority === "Medium"
                             ? "info.main"
                             : issue.priority === "Low"
