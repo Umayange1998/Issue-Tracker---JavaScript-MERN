@@ -8,7 +8,6 @@ import {
   MenuItem,
   Paper,
   Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import { ArrowLeft } from "lucide-react";
@@ -22,13 +21,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
-const issueData = {
-  id: "1",
-  title: "Fix mobile responsiveness on dashboard",
-  description: " Lorem ipsum dolor sit amet, consectetur adipiscing. ",
-  status: "In Progress",
-  priority: "High",
-};
 function stringAvatar(name) {
   return {
     sx: {
@@ -44,7 +36,6 @@ function IssueDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { role } = useSelector((state) => state.user);
   const { data: issue, isLoading } = useQuery({
     queryKey: ["issue", id],
     queryFn: async () => {

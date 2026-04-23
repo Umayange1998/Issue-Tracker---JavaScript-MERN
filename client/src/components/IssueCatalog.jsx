@@ -29,7 +29,7 @@ function IssueCatalog({ onlyMyTasks = false }) {
   const userId = user._id;
   const navigate = useNavigate();
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["issues"],
     queryFn: () => api.get("/issue"),
   });

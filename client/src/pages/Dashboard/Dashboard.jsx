@@ -1,5 +1,4 @@
-import React from "react";
-import { Box, Button, Divider, Grid, Paper, Typography } from "@mui/material";
+import { Box, Divider, Grid, Paper, Typography } from "@mui/material";
 import StatCard from "./StatCard";
 import NewIssueButton from "../../components/NewIssueButton";
 import ResentIssuesTable from "./ResentIssuesTable";
@@ -7,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../../https/api";
 
 function Dashboard() {
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey: ["issues"],
     queryFn: () => api.get("/issue"),
   });

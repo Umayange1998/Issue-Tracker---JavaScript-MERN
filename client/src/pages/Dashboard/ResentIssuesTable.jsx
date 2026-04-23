@@ -4,67 +4,9 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import Paper from "@mui/material/Paper";
 import { Chip, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-
-const recentIssuesData = [
-  {
-    id: "1",
-    title: "Fix mobile responsiveness on dashboard",
-    status: "In Progress",
-    priority: "High",
-  },
-  {
-    id: "2",
-    title: "Implement JWT authentication",
-    status: "Open",
-    priority: "Urgent",
-  },
-  {
-    id: "3",
-    title: "Documentation for API v2",
-    status: "Resolved",
-    priority: "Medium",
-  },
-  {
-    id: "1",
-    title: "Fix mobile responsiveness on dashboard",
-    status: "In Progress",
-    priority: "High",
-  },
-  {
-    id: "2",
-    title: "Implement JWT authentication",
-    status: "Open",
-    priority: "Urgent",
-  },
-  {
-    id: "3",
-    title: "Documentation for API v2",
-    status: "Resolved",
-    priority: "Low",
-  },
-  {
-    id: "1",
-    title: "Fix mobile responsiveness on dashboard",
-    status: "In Progress",
-    priority: "High",
-  },
-  {
-    id: "2",
-    title: "Implement JWT authentication",
-    status: "Closed",
-    priority: "Urgent",
-  },
-  {
-    id: "3",
-    title: "Documentation for API v2",
-    status: "Resolved",
-    priority: "Medium",
-  },
-];
 
 function ResentIssuesTable({ issues }) {
   const navigate = useNavigate();

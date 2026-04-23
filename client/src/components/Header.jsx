@@ -8,8 +8,6 @@ import InputBase from "@mui/material/InputBase";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
-import { useState } from "react";
-import Button from "@mui/material/Button";
 import { useDispatch, useSelector } from "react-redux";
 import { setSearchQuery } from "../Redux/Slices/searchSlice";
 
