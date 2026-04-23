@@ -19,7 +19,6 @@ import { api } from "../../https/api.js";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 
 function stringAvatar(name) {
   return {
