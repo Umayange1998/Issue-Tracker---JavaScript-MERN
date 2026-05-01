@@ -12,7 +12,6 @@ import {
   LayoutGrid,
   ListTodo,
   PlusCircle,
-  UserPlus,
   NotebookPen,
   LogOut,
   Users,
