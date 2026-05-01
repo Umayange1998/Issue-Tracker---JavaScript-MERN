@@ -192,9 +192,7 @@ export const deleteUser = async (req, res) => {
 //get all
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await userModel
-      .find({ isRegistered: true })
-      .select("fullName email role");
+    const users = await userModel.find().select("fullName email role");
 
     res.json({ data: users });
   } catch (error) {

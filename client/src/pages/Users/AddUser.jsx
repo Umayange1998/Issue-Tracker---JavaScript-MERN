@@ -38,7 +38,7 @@ function AddUser() {
       setEmail("");
       setRole("User");
       setLoading(false);
-      navigate("/");
+      navigate("/userlist");
     },
 
     onError: (err) => {
@@ -89,7 +89,7 @@ function AddUser() {
             height: 40,
             p: 0,
           }}
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/userlist")}
         >
           <X />
         </Button>

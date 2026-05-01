@@ -15,6 +15,7 @@ import {
   UserPlus,
   NotebookPen,
   LogOut,
+  Users,
 } from "lucide-react";
 import Typography from "@mui/material/Typography";
 import { useDispatch } from "react-redux";
@@ -110,11 +111,11 @@ function SideNavBar() {
               },
             }}
           >
-            <ListItemButton onClick={() => navigate("/adduser")}>
+            <ListItemButton onClick={() => navigate("/userlist")}>
               <ListItemIcon>
-                <UserPlus size={20} color="#94A3B8" />
+                <Users size={20} color="#94A3B8" />
               </ListItemIcon>
-              <ListItemText primary={"Add Member"} sx={{ color: "#fff" }} />
+              <ListItemText primary={"Members"} sx={{ color: "#fff" }} />
             </ListItemButton>
           </ListItem>
         )}

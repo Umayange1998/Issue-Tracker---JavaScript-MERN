@@ -13,6 +13,7 @@ import {
   TableRow,
   Typography,
   Paper,
+  Button,
 } from "@mui/material";
 import { useState } from "react";
 import NewIssueButton from "./NewIssueButton";
@@ -20,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../https/api.js";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { FolderUp } from "lucide-react";
 
 function IssueCatalog({ onlyMyTasks = false }) {
   const [statusFilter, setStatusFilter] = useState("All");
@@ -51,8 +53,40 @@ function IssueCatalog({ onlyMyTasks = false }) {
     return statusMatch && priorityMatch && searchMatch && myTaskMatch;
   });
 
+  const exportToCSV = () => {
+    const headers = ["Issue ID", "Title", "Description", "Status", "Priority"];
+
+    const rows = issues.map((issue) => [
+      issue.issueId,
+      issue.title,
+      issue.description,
+      issue.status,
+      issue.priority,
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((item) => `"${item}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "issues.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <Grid container spacing={2} sx={{ mt: 5, px: 5 }}>
+    <Grid
+      container
+      spacing={2}
+      sx={{ p: 5, height: "90vh", display: "flex", alignContent: "flex-start" }}
+    >
       <Grid
         size={12}
         sx={{
@@ -105,7 +139,7 @@ function IssueCatalog({ onlyMyTasks = false }) {
         </Box>
       </Grid>
       <Grid size={12}>
-        <TableContainer component={Paper} sx={{ maxHeight: 550 }}>
+        <TableContainer component={Paper} sx={{ maxHeight: 500 }}>
           <Table stickyHeader sx={{ minWidth: 650 }} aria-label="simple table">
             <TableHead>
               <TableRow>
@@ -225,6 +259,24 @@ function IssueCatalog({ onlyMyTasks = false }) {
           </Table>
         </TableContainer>
       </Grid>
+      <Box
+        sx={{
+          position: "fixed",
+          bottom: 20,
+          right: 20,
+          zIndex: 1300,
+          mb: 3,
+        }}
+      >
+        <Button
+          variant="outlined"
+          color="secondary"
+          startIcon={<FolderUp />}
+          onClick={exportToCSV}
+        >
+          Export to CSV
+        </Button>
+      </Box>
     </Grid>
   );
 }
