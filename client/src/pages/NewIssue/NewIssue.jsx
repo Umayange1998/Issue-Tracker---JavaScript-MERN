@@ -15,12 +15,15 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../https/api.js";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 function NewIssue() {
   const navigate = useNavigate();
+  const userdata = useSelector((state) => state.user);
   const [priority, setPriority] = useState("Medium");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [createdBy, setCreatedBy] = useState(userdata._id);
 
   const [error, setError] = useState("");
 
@@ -34,7 +37,8 @@ function NewIssue() {
       navigate("/allissues");
     },
     onError: (err) => {
-      toast.error(err.response?.data?.message || "Failed to create issue");
+      console.log(err.response?.data?.message);
+      toast.error("Failed to create issue");
     },
   });
   const handleSubmit = () => {
@@ -48,6 +52,7 @@ function NewIssue() {
       priority,
       status: "Open",
       description,
+      createdBy,
       assignedTo: [],
     });
   };

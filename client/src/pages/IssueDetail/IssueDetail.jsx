@@ -1,4 +1,5 @@
 import {
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -8,6 +9,7 @@ import {
   MenuItem,
   Paper,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
 import { ArrowLeft } from "lucide-react";
@@ -19,22 +21,31 @@ import { api } from "../../https/api.js";
 import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
-function stringAvatar(name) {
+function stringAvatar(name = "Unknown") {
+  const parts = name.trim().split(" ");
+
+  const first = parts[0]?.[0] || "";
+  const second = parts[1]?.[0] || "";
+
   return {
     sx: {
       bgcolor: "#000000",
     },
-    children: `${name.split(" ")[0][0]}${name.split(" ")[1][0]}`,
+    children: `${first}${second}`.toUpperCase(),
   };
 }
 
 function IssueDetail() {
   const [status, setStatus] = useState("Open");
   const [member, setMember] = useState("");
+  const [commentText, setCommentText] = useState("");
+  const { token } = useSelector((state) => state.user);
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const { data: issue, isLoading } = useQuery({
     queryKey: ["issue", id],
     queryFn: async () => {
@@ -42,9 +53,34 @@ function IssueDetail() {
       return res.data;
     },
   });
+
+  const addCommentMutation = useMutation({
+    mutationFn: async (comment) => {
+      return api.post(
+        `/issue/${id}/comment`,
+        { comment },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["issue", id] });
+      setCommentText("");
+      toast.success("Comment added");
+    },
+
+    onError: () => {
+      toast.error("Failed to add comment");
+    },
+  });
   useEffect(() => {
     if (issue) setStatus(issue.status);
   }, [issue]);
+
   const { data: users } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
@@ -52,6 +88,7 @@ function IssueDetail() {
       return res.data.data;
     },
   });
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ status, member }) => {
       return api.put(`/issue/update/${id}`, {
@@ -60,18 +97,25 @@ function IssueDetail() {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(["issue", id]);
+      queryClient.invalidateQueries({ queryKey: ["issue", id] });
       queryClient.invalidateQueries(["issues"]);
       setMember("");
       toast.success("Updated successfully!");
     },
   });
+
   const handleUpdate = () => {
     updateStatusMutation.mutate({ status, member });
   };
   if (isLoading || !issue) {
     return <Typography sx={{ p: 5 }}>Loading...</Typography>;
   }
+
+  const handleAddComment = () => {
+    if (!commentText.trim()) return;
+
+    addCommentMutation.mutate(commentText);
+  };
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
       <Grid
@@ -118,11 +162,12 @@ function IssueDetail() {
         <Paper
           elevation={3}
           sx={{
-            p: 5,
+            px: 5,
+            py: 4,
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            gap: 3,
+            gap: 1,
             borderRadius: 4,
           }}
         >
@@ -155,7 +200,7 @@ function IssueDetail() {
             label={issue.status}
           />
           <Typography
-            variant="h5"
+            variant="h6"
             sx={{
               fontFamily: "Poppins",
               fontWeight: "bold",
@@ -196,7 +241,8 @@ function IssueDetail() {
         <Paper
           elevation={3}
           sx={{
-            p: 5,
+            px: 5,
+            py: 4,
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
@@ -210,24 +256,68 @@ function IssueDetail() {
           >
             Internal Activity Log
           </Typography>
-          <Box sx={{ display: "flex", gap: 2 }}>
-            <Avatar {...stringAvatar("Kent Dodds")} />
-            <Box>
-              <Box
-                sx={{
-                  p: 1,
-                  bgcolor: "background.default",
-                  border: 1,
-                  borderColor: "#555555",
-                  borderRadius: 2,
-                }}
-              >
-                <Typography sx={{ color: "text.secondary" }}>
-                  Comments....
-                </Typography>
+          {issue?.comments?.length > 0 ? (
+            issue.comments.map((c, index) => (
+              <Box key={index} sx={{ display: "flex", gap: 2 }}>
+                <Avatar {...stringAvatar(c.commentedBy?.fullName || "N A")} />
+
+                <Box
+                  sx={{
+                    p: 1,
+                    bgcolor: "background.default",
+                    border: 1,
+                    borderColor: "#555555",
+                    borderRadius: 2,
+                    width: "100%",
+                  }}
+                >
+                  <Typography sx={{ color: "text.secondary" }}>
+                    {c.comment}
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      display: "flex",
+                      justifyContent: "flex-end",
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "text.secondary",
+                        textAlign: "end",
+                      }}
+                    >
+                      {c.commentedBy?.fullName || "Unknown"} •{" "}
+                      {new Date(c.commentedAt).toLocaleString()}
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
-              <Typography sx={{ color: "text.secondary" }}>user</Typography>
-            </Box>
+            ))
+          ) : (
+            <Typography sx={{ color: "text.secondary" }}>
+              No comments yet
+            </Typography>
+          )}
+
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <TextField
+              placeholder="Comment...."
+              size="small"
+              sx={{ minWidth: "80%" }}
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+            />
+            <Button variant="contained" size="small" onClick={handleAddComment}>
+              {addCommentMutation.isPending ? "Adding..." : "Add"}
+            </Button>
           </Box>
         </Paper>
       </Grid>
@@ -307,18 +397,19 @@ function IssueDetail() {
             >
               Assign member
             </Typography>
-            <Select
-              value={member}
+            <Autocomplete
               size="small"
-              onChange={(e) => setMember(e.target.value)}
               fullWidth
-            >
-              {users?.map((u) => (
-                <MenuItem key={u._id} value={u._id}>
-                  {u.fullName}
-                </MenuItem>
-              ))}
-            </Select>
+              options={users || []}
+              getOptionLabel={(option) => option.fullName || ""}
+              value={users?.find((u) => u._id === member) || null}
+              onChange={(event, newValue) => {
+                setMember(newValue?._id || "");
+              }}
+              renderInput={(params) => (
+                <TextField {...params} placeholder="Select Member" />
+              )}
+            />
 
             <Button
               variant="contained"

@@ -31,6 +31,9 @@ function IssueCatalog({ onlyMyTasks = false }) {
   const userId = user._id;
   const navigate = useNavigate();
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString();
+  };
   const { data } = useQuery({
     queryKey: ["issues"],
     queryFn: () => api.get("/issue"),
@@ -152,6 +155,9 @@ function IssueCatalog({ onlyMyTasks = false }) {
                   Priority
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Created
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
                   Action
                 </TableCell>
               </TableRow>
@@ -243,6 +249,10 @@ function IssueCatalog({ onlyMyTasks = false }) {
                       }}
                       label={issue.priority}
                     />
+                  </TableCell>
+                  <TableCell align="center">
+                    <Typography> {formatDate(issue.createdAt)}</Typography>
+                    <Typography> {issue.createdBy?.email || "N/A"}</Typography>
                   </TableCell>
                   <TableCell align="center" sx={{ color: "text.secondary" }}>
                     <Link
