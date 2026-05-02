@@ -23,7 +23,7 @@ function NewIssue() {
   const [priority, setPriority] = useState("Medium");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [createdBy, setCreatedBy] = useState(userdata._id);
+  const createdBy = userdata._id;
 
   const [error, setError] = useState("");
 
