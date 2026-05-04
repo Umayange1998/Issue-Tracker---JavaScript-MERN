@@ -46,6 +46,10 @@ function IssueDetail() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString();
+  };
+
   const { data: issue, isLoading } = useQuery({
     queryKey: ["issue", id],
     queryFn: async () => {
@@ -289,7 +293,7 @@ function IssueDetail() {
                       }}
                     >
                       {c.commentedBy?.fullName || "Unknown"} •{" "}
-                      {new Date(c.commentedAt).toLocaleString()}
+                      {formatDate(c.commentedAt)}
                     </Typography>
                   </Box>
                 </Box>

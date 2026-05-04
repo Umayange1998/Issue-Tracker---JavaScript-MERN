@@ -10,6 +10,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useDispatch, useSelector } from "react-redux";
 import { setSearchQuery } from "../Redux/Slices/searchSlice";
+import { useLocation } from "react-router-dom";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -49,6 +50,8 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 function Header() {
   const userdata = useSelector((state) => state.user);
   const dispatch = useDispatch();
+  const location = useLocation();
+
   const query = useSelector((state) => state.search.query);
 
   return (
@@ -80,7 +83,11 @@ function Header() {
               <SearchIcon sx={{ color: "#E2E8F0" }} />
             </SearchIconWrapper>
             <StyledInputBase
-              placeholder="Search by issue title, ID or priority..."
+              placeholder={
+                (location.pathname === "/" &&
+                  "Seach by username, Id or Name") ||
+                "Search by issue title, ID or priority..."
+              }
               inputProps={{ "aria-label": "search" }}
               value={query}
               onChange={(e) => dispatch(setSearchQuery(e.target.value))}
