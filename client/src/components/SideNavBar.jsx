@@ -58,7 +58,7 @@ function SideNavBar() {
           variant="h5"
           sx={{ color: "#ffffff", cursor: "pointer" }}
         >
-          IssueTracker
+          IssueFlow
         </Typography>
       </Box>
       <Divider
