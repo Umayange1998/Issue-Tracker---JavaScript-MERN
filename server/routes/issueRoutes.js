@@ -2,6 +2,7 @@ import express from "express";
 import {
   addComment,
   createIssue,
+  deleteIssue,
   getAllIssues,
   getIssueById,
   updateIssue,
@@ -21,6 +22,8 @@ router.get("/getissue/:id", getIssueById);
 
 // Update issue
 router.put("/update/:id", updateIssue);
+// Delete issue
+router.delete("/:id", authMiddleware, deleteIssue);
 
 // add comment
 router.post("/:id/comment", authMiddleware, addComment);

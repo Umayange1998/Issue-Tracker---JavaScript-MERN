@@ -29,6 +29,10 @@ const issueSchema = new mongoose.Schema(
       enum: ["Low", "Medium", "High", "Urgent"],
       default: "Medium",
     },
+    dueDate: {
+      type: Date,
+      default: null,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

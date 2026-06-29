@@ -14,6 +14,12 @@ import {
   Typography,
   Paper,
   Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { useState } from "react";
 import NewIssueButton from "./NewIssueButton";
@@ -21,15 +27,55 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "../https/api.js";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { FolderUp } from "lucide-react";
+import { FolderUp, Trash2, TriangleAlert } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 function IssueCatalog({ onlyMyTasks = false }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedIssueId, setSelectedIssueId] = useState(null);
   const query = useSelector((state) => state.search.query.toLowerCase());
   const user = useSelector((state) => state.user);
+  const { token } = useSelector((state) => state.user);
+
   const userId = user._id;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { role } = useSelector((state) => state.user);
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) =>
+      api.delete(`/issue/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }),
+
+    onSuccess: () => {
+      toast.success("Issue deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["issues"] });
+      setOpenDelete(false);
+      setSelectedIssueId(null);
+    },
+
+    onError: () => {
+      toast.error("Failed to delete issue");
+    },
+  });
+
+  const handleDeleteIssue = (id) => {
+    setSelectedIssueId(id);
+    setOpenDelete(true);
+  };
+  const confirmDeleteIssue = () => {
+    deleteMutation.mutate(selectedIssueId);
+  };
+  const closeDeleteModal = () => {
+    setOpenDelete(false);
+    setSelectedIssueId(null);
+  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
@@ -155,6 +201,9 @@ function IssueCatalog({ onlyMyTasks = false }) {
                   Priority
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
+                  Due date
+                </TableCell>
+                <TableCell align="center" sx={{ fontWeight: "bold" }}>
                   Created
                 </TableCell>
                 <TableCell align="center" sx={{ fontWeight: "bold" }}>
@@ -251,18 +300,54 @@ function IssueCatalog({ onlyMyTasks = false }) {
                     />
                   </TableCell>
                   <TableCell align="center">
+                    <Typography>
+                      {" "}
+                      {issue.dueDate
+                        ? formatDate(issue.dueDate)
+                        : "No due date"}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
                     <Typography> {formatDate(issue.createdAt)}</Typography>
                     <Typography> {issue.createdBy?.email || "N/A"}</Typography>
                   </TableCell>
-                  <TableCell align="center" sx={{ color: "text.secondary" }}>
-                    <Link
-                      component="button"
-                      underline="none"
-                      onClick={() => navigate(`/issue/${issue._id}`)}
-                    >
-                      View
-                    </Link>
-                  </TableCell>
+
+                  {role === "admin" ? (
+                    <TableCell sx={{ color: "text.secondary" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
+                      >
+                        <Link
+                          component="button"
+                          underline="none"
+                          onClick={() => navigate(`/issue/${issue._id}`)}
+                        >
+                          View
+                        </Link>
+
+                        <IconButton
+                          color="error"
+                          onClick={() => handleDeleteIssue(issue._id)}
+                        >
+                          <Trash2 />
+                        </IconButton>
+                      </Box>
+                    </TableCell>
+                  ) : (
+                    <TableCell align="center">
+                      <Link
+                        component="button"
+                        underline="none"
+                        onClick={() => navigate(`/issue/${issue._id}`)}
+                      >
+                        View
+                      </Link>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -287,6 +372,38 @@ function IssueCatalog({ onlyMyTasks = false }) {
           Export to CSV
         </Button>
       </Box>
+      <Dialog open={openDelete} onClose={closeDeleteModal}>
+        <DialogTitle
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 2,
+            color: "error.main",
+          }}
+        >
+          Delete Issue <TriangleAlert />
+        </DialogTitle>
+
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this issue? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={closeDeleteModal}>Cancel</Button>
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={confirmDeleteIssue}
+            disabled={deleteMutation.isPending}
+          >
+            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Grid>
   );
 }

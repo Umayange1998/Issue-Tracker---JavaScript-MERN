@@ -4,8 +4,15 @@ import { generateIssueId } from "../utils/generateIssueId.js";
 //  Create Issue
 export const createIssue = async (req, res) => {
   try {
-    const { title, status, priority, description, createdBy, assignedTo } =
-      req.body;
+    const {
+      title,
+      status,
+      priority,
+      description,
+      createdBy,
+      assignedTo,
+      dueDate,
+    } = req.body;
 
     const issueId = await generateIssueId();
 
@@ -17,6 +24,7 @@ export const createIssue = async (req, res) => {
       description,
       createdBy,
       assignedTo,
+      dueDate,
     });
 
     res.status(201).json(issue);
@@ -89,6 +97,21 @@ export const updateIssue = async (req, res) => {
     }
 
     res.json(updatedIssue);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Delete Issue
+export const deleteIssue = async (req, res) => {
+  try {
+    const issue = await issueModel.findByIdAndDelete(req.params.id);
+
+    if (!issue) {
+      return res.status(404).json({ message: "Issue not found" });
+    }
+
+    res.json({ message: "Issue deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

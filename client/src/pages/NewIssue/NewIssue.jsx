@@ -16,6 +16,10 @@ import { api } from "../../https/api.js";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
+import { DemoContainer } from "@mui/x-date-pickers/internals/demo";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 function NewIssue() {
   const navigate = useNavigate();
@@ -23,6 +27,7 @@ function NewIssue() {
   const [priority, setPriority] = useState("Medium");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [dueDate, setDueDate] = useState(null);
   const createdBy = userdata._id;
 
   const [error, setError] = useState("");
@@ -54,6 +59,7 @@ function NewIssue() {
       description,
       createdBy,
       assignedTo: [],
+      dueDate: dueDate ? dueDate.toISOString() : null,
     });
   };
 
@@ -165,36 +171,81 @@ function NewIssue() {
             </Box>
             <Box
               sx={{
-                mb: 3,
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: 2,
               }}
             >
-              <Typography
+              <Box
                 sx={{
-                  fontWeight: "bold",
-                  color: "text.secondary",
+                  mb: 3,
+                  display: "flex",
+                  flexDirection: "column",
                   alignItems: "flex-start",
+                  width: "100%",
                 }}
               >
-                Priority
-              </Typography>
-              <Select
-                size="small"
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    color: "text.secondary",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  Priority
+                </Typography>
+                <Select
+                  size="small"
+                  sx={{
+                    minWidth: "100%",
+                    borderRadius: 2,
+                    bgcolor: "background.default",
+                    mb: 1,
+                    mt: 1,
+                  }}
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                >
+                  <MenuItem value={"Urgent"}>Urgent</MenuItem>
+                  <MenuItem value={"High"}>High</MenuItem>
+                  <MenuItem value={"Medium"}>Medium</MenuItem>
+                  <MenuItem value={"Low"}>Low</MenuItem>
+                </Select>
+              </Box>
+              <Box
                 sx={{
-                  minWidth: "50%",
-                  borderRadius: 2,
-                  bgcolor: "background.default",
+                  mb: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "flex-start",
+                  width: "100%",
                 }}
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
               >
-                <MenuItem value={"Urgent"}>Urgent</MenuItem>
-                <MenuItem value={"High"}>High</MenuItem>
-                <MenuItem value={"Medium"}>Medium</MenuItem>
-                <MenuItem value={"Low"}>Low</MenuItem>
-              </Select>
+                <Typography
+                  sx={{
+                    fontWeight: "bold",
+                    color: "text.secondary",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  Due At
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoContainer components={["DatePicker"]}>
+                    <DatePicker
+                      label="-Select-"
+                      onChange={(newValue) => setDueDate(newValue)}
+                      sx={{ width: "100%" }}
+                      slotProps={{
+                        textField: {
+                          size: "small",
+                          fullWidth: true,
+                        },
+                      }}
+                    />
+                  </DemoContainer>
+                </LocalizationProvider>
+              </Box>
             </Box>
 
             <Button
