@@ -11,6 +11,7 @@ import AccountCircle from "@mui/icons-material/AccountCircle";
 import { useDispatch, useSelector } from "react-redux";
 import { setSearchQuery } from "../Redux/Slices/searchSlice";
 import { useLocation } from "react-router-dom";
+import { Avatar } from "@mui/material";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -46,6 +47,19 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
     width: "50ch",
   },
 }));
+function stringAvatar(name = "Unknown") {
+  const parts = name.trim().split(" ");
+
+  const first = parts[0]?.[0] || "";
+  const second = parts[1]?.[0] || "";
+
+  return {
+    sx: {
+      bgcolor: "#000000",
+    },
+    children: `${first}${second}`.toUpperCase(),
+  };
+}
 
 function Header() {
   const userdata = useSelector((state) => state.user);
@@ -109,9 +123,7 @@ function Header() {
                 {userdata.role}
               </Typography>
             </Box>
-            <IconButton sx={{ p: 0, width: 40, height: 40 }}>
-              <AccountCircle sx={{ width: "40px", height: "40px" }} />
-            </IconButton>
+            <Avatar {...stringAvatar(userdata?.fullName || "N A")} />
           </Box>
         </Toolbar>
       </AppBar>

@@ -85,7 +85,16 @@ function IssueCatalog({ onlyMyTasks = false }) {
     queryFn: () => api.get("/issue"),
   });
   const issues = data?.data || [];
-  const filteredIssues = issues.filter((issue) => {
+  const visibleIssues =
+    role === "admin"
+      ? issues
+      : issues.filter(
+          (issue) =>
+            issue.createdBy?._id === userId ||
+            issue.assignedTo?.some((u) => u._id === userId),
+        );
+
+  const filteredIssues = visibleIssues.filter((issue) => {
     const statusMatch = statusFilter === "All" || issue.status === statusFilter;
 
     const priorityMatch =
@@ -97,7 +106,9 @@ function IssueCatalog({ onlyMyTasks = false }) {
       issue.priority?.toLowerCase().includes(query);
 
     const myTaskMatch =
-      !onlyMyTasks || issue.assignedTo?.some((u) => u._id === userId);
+      !onlyMyTasks ||
+      issue.createdBy?._id === userId ||
+      issue.assignedTo?.some((u) => u._id === userId);
 
     return statusMatch && priorityMatch && searchMatch && myTaskMatch;
   });
@@ -354,24 +365,26 @@ function IssueCatalog({ onlyMyTasks = false }) {
           </Table>
         </TableContainer>
       </Grid>
-      <Box
-        sx={{
-          position: "fixed",
-          bottom: 20,
-          right: 20,
-          zIndex: 1300,
-          mb: 3,
-        }}
-      >
-        <Button
-          variant="outlined"
-          color="secondary"
-          startIcon={<FolderUp />}
-          onClick={exportToCSV}
+      {role === "admin" && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: 20,
+            right: 20,
+            zIndex: 1300,
+            mb: 3,
+          }}
         >
-          Export to CSV
-        </Button>
-      </Box>
+          <Button
+            variant="outlined"
+            color="secondary"
+            startIcon={<FolderUp />}
+            onClick={exportToCSV}
+          >
+            Export to CSV
+          </Button>
+        </Box>
+      )}
       <Dialog open={openDelete} onClose={closeDeleteModal}>
         <DialogTitle
           sx={{

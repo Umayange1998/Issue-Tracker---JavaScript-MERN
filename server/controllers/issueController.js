@@ -70,11 +70,16 @@ export const getIssueById = async (req, res) => {
 // Update Issue
 export const updateIssue = async (req, res) => {
   try {
-    const { status, assignedTo } = req.body;
+    const { status, assignedTo, priority, dueDate } = req.body;
 
     const update = {};
 
     if (status) update.status = status;
+    if (priority) update.priority = priority;
+
+    if (dueDate !== undefined) {
+      update.dueDate = dueDate;
+    }
 
     const updatedIssue = await issueModel
       .findByIdAndUpdate(

@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Box,
 } from "@mui/material";
 import React, { useState } from "react";
 import { UserPlus, RefreshCw, Trash2, TriangleAlert } from "lucide-react";
@@ -205,18 +206,26 @@ function AllUsers() {
                     </Select>
                   </TableCell>
                   <TableCell align="center">
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleUpdateUser(user._id)}
+                    <Box
+                      sx={{
+                        alignItems: "center",
+                      }}
                     >
-                      <RefreshCw />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteUser(user._id)}
-                    >
-                      <Trash2 />
-                    </IconButton>
+                      <Button
+                        sx={{ mr: 2 }}
+                        startIcon={<RefreshCw />}
+                        color="primary"
+                        onClick={() => handleUpdateUser(user._id)}
+                      >
+                        Update
+                      </Button>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDeleteUser(user._id)}
+                      >
+                        <Trash2 />
+                      </IconButton>
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))}

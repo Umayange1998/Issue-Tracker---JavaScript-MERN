@@ -4,12 +4,15 @@ import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
-import { Chip, Link } from "@mui/material";
+import { Chip, Link, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 function ResentIssuesTable({ issues }) {
   const navigate = useNavigate();
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString();
+  };
   const query = useSelector((state) => state.search.query.toLowerCase());
   const recentIssues = [...issues]
     .filter((issue) => {
@@ -32,6 +35,9 @@ function ResentIssuesTable({ issues }) {
             </TableCell>
             <TableCell align="center" sx={{ fontWeight: "bold" }}>
               Priority
+            </TableCell>
+            <TableCell align="center" sx={{ fontWeight: "bold" }}>
+              Due date
             </TableCell>
             <TableCell align="center" sx={{ fontWeight: "bold" }}>
               Created
@@ -118,8 +124,15 @@ function ResentIssuesTable({ issues }) {
                   label={issue.priority}
                 />
               </TableCell>
-              <TableCell align="center" sx={{ color: "text.secondary" }}>
-                {new Date(issue.createdAt).toLocaleString()}
+              <TableCell align="center">
+                <Typography>
+                  {" "}
+                  {issue.dueDate ? formatDate(issue.dueDate) : "No due date"}
+                </Typography>
+              </TableCell>
+              <TableCell align="center">
+                <Typography> {formatDate(issue.createdAt)}</Typography>
+                <Typography> {issue.createdBy?.email || "N/A"}</Typography>
               </TableCell>
             </TableRow>
           ))}

@@ -25,11 +25,12 @@ function SideNavBar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const adduser = location.pathname === "/adduser";
+  const allissues = location.pathname === "/allissues";
   const { role } = useSelector((state) => state.user);
 
   const navItems = [
     { label: "Dashboard", icon: LayoutGrid, path: "/" },
-    { label: "All Issues", icon: ListTodo, path: "/allissues" },
+    // { label: "All Issues", icon: ListTodo, path: "/allissues" },
     { label: "New Issue", icon: PlusCircle, path: "/new" },
     { label: "My Tasks", icon: NotebookPen, path: "/my" },
   ];
@@ -98,6 +99,29 @@ function SideNavBar() {
         {role === "admin" && (
           <ListItem
             sx={{
+              backgroundColor: allissues ? "#334155" : "transparent",
+              color: allissues ? "#ffffff" : "#94A3B8",
+              borderLeft: allissues
+                ? "3px solid #E2E8F0"
+                : "3px solid transparent",
+
+              "&:hover": {
+                backgroundColor: "#33415580",
+                color: "#ffffff",
+              },
+            }}
+          >
+            <ListItemButton onClick={() => navigate("/allissues")}>
+              <ListItemIcon>
+                <ListTodo size={20} color="#94A3B8" />
+              </ListItemIcon>
+              <ListItemText primary={"All Issues"} sx={{ color: "#fff" }} />
+            </ListItemButton>
+          </ListItem>
+        )}
+        {role === "admin" && (
+          <ListItem
+            sx={{
               backgroundColor: adduser ? "#334155" : "transparent",
               color: adduser ? "#ffffff" : "#94A3B8",
               borderLeft: adduser
@@ -118,6 +142,7 @@ function SideNavBar() {
             </ListItemButton>
           </ListItem>
         )}
+
         <ListItem
           sx={{
             "&:hover": {

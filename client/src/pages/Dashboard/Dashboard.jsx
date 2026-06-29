@@ -4,14 +4,25 @@ import NewIssueButton from "../../components/NewIssueButton";
 import ResentIssuesTable from "./ResentIssuesTable";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../../https/api";
+import { useSelector } from "react-redux";
 
 function Dashboard() {
   const { data } = useQuery({
     queryKey: ["issues"],
     queryFn: () => api.get("/issue"),
   });
+  const { role, _id: userId } = useSelector((state) => state.user);
 
-  const issues = data?.data || [];
+  const allIssues = data?.data || [];
+
+  const issues =
+    role === "admin"
+      ? allIssues
+      : allIssues.filter(
+          (issue) =>
+            issue.createdBy?._id === userId ||
+            issue.assignedTo?.some((user) => user._id === userId),
+        );
 
   const total = issues.length;
   const open = issues.filter((i) => i.status === "Open").length;

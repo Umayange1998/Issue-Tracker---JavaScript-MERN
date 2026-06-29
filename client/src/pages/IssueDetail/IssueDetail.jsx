@@ -22,6 +22,10 @@ import { useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
+import dayjs from "dayjs";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 function stringAvatar(name = "Unknown") {
   const parts = name.trim().split(" ");
@@ -40,11 +44,14 @@ function stringAvatar(name = "Unknown") {
 function IssueDetail() {
   const [status, setStatus] = useState("Open");
   const [member, setMember] = useState("");
+  const [priority, setPriority] = useState("Medium");
+  const [dueDate, setDueDate] = useState(null);
   const [commentText, setCommentText] = useState("");
   const { token } = useSelector((state) => state.user);
   const { id } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { role, _id: userId } = useSelector((state) => state.user);
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString();
@@ -83,6 +90,8 @@ function IssueDetail() {
   });
   useEffect(() => {
     if (issue) setStatus(issue.status);
+    if (issue) setPriority(issue.priority);
+    if (issue) setDueDate(issue.dueDate ? dayjs(issue.dueDate) : null);
   }, [issue]);
 
   const { data: users } = useQuery({
@@ -93,23 +102,35 @@ function IssueDetail() {
     },
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async ({ status, member }) => {
-      return api.put(`/issue/update/${id}`, {
-        status,
-        assignedTo: member || null,
-      });
+  const assignableUsers =
+    role === "admin"
+      ? users || []
+      : (users || []).filter((u) => u._id === userId);
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ data }) => {
+      return api.put(`/issue/update/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["issue", id] });
-      queryClient.invalidateQueries(["issues"]);
+      queryClient.invalidateQueries({ queryKey: ["issues"] });
       setMember("");
       toast.success("Updated successfully!");
+    },
+    onError: () => {
+      toast.error("Failed to update issue");
     },
   });
 
   const handleUpdate = () => {
-    updateStatusMutation.mutate({ status, member });
+    updateMutation.mutate({
+      data: {
+        status,
+        priority,
+        dueDate: dueDate ? dueDate.toISOString() : null,
+        assignedTo: member || null,
+      },
+    });
   };
   if (isLoading || !issue) {
     return <Typography sx={{ p: 5 }}>Loading...</Typography>;
@@ -120,6 +141,7 @@ function IssueDetail() {
 
     addCommentMutation.mutate(commentText);
   };
+
   return (
     <Grid container spacing={2} sx={{ mt: 3 }}>
       <Grid
@@ -175,71 +197,205 @@ function IssueDetail() {
             borderRadius: 4,
           }}
         >
-          <Chip
-            size="small"
-            variant="outlined"
-            sx={{
-              borderColor:
-                issue.status === "Open"
-                  ? "warning.main"
-                  : issue.status === "Resolved"
-                    ? "success.main"
-                    : issue.status === "In Progress"
-                      ? "info.main"
-                      : issue.status === "Closed"
-                        ? "closed.main"
-                        : "grey.400",
-              color:
-                issue.status === "Open"
-                  ? "warning.main"
-                  : issue.status === "Resolved"
-                    ? "success.main"
-                    : issue.status === "In Progress"
-                      ? "info.main"
-                      : "grey.400",
-              borderRadius: 2,
-              px: 1,
-              width: 100,
-            }}
-            label={issue.status}
-          />
-          <Typography
-            variant="h6"
-            sx={{
-              fontFamily: "Poppins",
-              fontWeight: "bold",
-              textAlign: "start",
-            }}
-          >
-            {issue.title}{" "}
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              gap: 1,
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: "text.secondary",
-                fontWeight: "bold",
-                textAlign: "start",
-              }}
+          <Box sx={{ display: "flex", width: "100%" }}>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", width: "50%" }}
             >
-              Specification
-            </Typography>
-            <Typography
-              sx={{
-                color: "text.secondary",
-                fontWeight: "bold",
-                textAlign: "start",
-              }}
+              <Chip
+                size="small"
+                variant="outlined"
+                sx={{
+                  borderColor:
+                    issue.status === "Open"
+                      ? "warning.main"
+                      : issue.status === "Resolved"
+                        ? "success.main"
+                        : issue.status === "In Progress"
+                          ? "info.main"
+                          : issue.status === "Closed"
+                            ? "closed.main"
+                            : "grey.400",
+                  color:
+                    issue.status === "Open"
+                      ? "warning.main"
+                      : issue.status === "Resolved"
+                        ? "success.main"
+                        : issue.status === "In Progress"
+                          ? "info.main"
+                          : "grey.400",
+                  borderRadius: 2,
+                  px: 1,
+                  width: 100,
+                }}
+                label={issue.status}
+              />
+              <Typography
+                variant="h6"
+                sx={{
+                  fontFamily: "Poppins",
+                  fontWeight: "bold",
+                  textAlign: "start",
+                }}
+              >
+                {issue.title}{" "}
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  gap: 1,
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                    textAlign: "start",
+                  }}
+                >
+                  Specification
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "text.secondary",
+                    fontWeight: "bold",
+                    textAlign: "start",
+                  }}
+                >
+                  {issue.description}
+                </Typography>
+              </Box>
+            </Box>
+            <Box
+              sx={{ display: "flex", flexDirection: "column", width: "50%" }}
             >
-              {issue.description}
-            </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                {/* <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontFamily: "sans-serif",
+                    fontWeight: "bold",
+                  }}
+                >
+                  PRIORITY
+                </Typography> */}
+                <Typography
+                  sx={{
+                    color:
+                      issue.priority === "High"
+                        ? "error.main"
+                        : issue.priority === "Urgent"
+                          ? "urgent.main"
+                          : issue.priority === "Medium"
+                            ? "info.main"
+                            : issue.priority === "Low"
+                              ? "#94A3B8"
+                              : "grey.400",
+                  }}
+                >
+                  {issue.priority}
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontFamily: "sans-serif",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Assigned to
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {Array.isArray(issue?.assignedTo) &&
+                  issue.assignedTo.length > 0 ? (
+                    issue.assignedTo.map((member) => (
+                      <Typography key={member._id}>
+                        {member.fullName}
+                      </Typography>
+                    ))
+                  ) : (
+                    <Typography>None</Typography>
+                  )}
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontFamily: "sans-serif",
+                    fontWeight: "bold",
+                  }}
+                >
+                  CREATED
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "end",
+                  }}
+                >
+                  <Typography>
+                    {issue?.createdAt
+                      ? new Date(issue.createdAt).toLocaleDateString()
+                      : "-"}
+                  </Typography>
+                  <Typography> {issue.createdBy?.email || "N/A"}</Typography>
+                </Box>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "text.secondary",
+                    fontFamily: "sans-serif",
+                    fontWeight: "bold",
+                  }}
+                >
+                  DUE DATE
+                </Typography>
+                <Typography>
+                  {issue?.dueDate
+                    ? new Date(issue.dueDate).toLocaleDateString()
+                    : "No due date"}
+                </Typography>
+              </Box>
+            </Box>
           </Box>
         </Paper>
         <Paper
@@ -349,7 +505,6 @@ function IssueDetail() {
             <Typography
               variant="caption"
               sx={{
-                mt: 2,
                 color: "text.secondary",
                 fontWeight: "bold",
                 textAlign: "start",
@@ -393,7 +548,6 @@ function IssueDetail() {
             <Typography
               variant="caption"
               sx={{
-                mt: 2,
                 color: "text.secondary",
                 fontWeight: "bold",
                 textAlign: "start",
@@ -404,7 +558,7 @@ function IssueDetail() {
             <Autocomplete
               size="small"
               fullWidth
-              options={users || []}
+              options={assignableUsers}
               getOptionLabel={(option) => option.fullName || ""}
               value={users?.find((u) => u._id === member) || null}
               onChange={(event, newValue) => {
@@ -414,16 +568,83 @@ function IssueDetail() {
                 <TextField {...params} placeholder="Select Member" />
               )}
             />
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                fontWeight: "bold",
+              }}
+            >
+              Change Priority
+            </Typography>
+
+            <Select
+              size="small"
+              value={priority}
+              sx={{
+                borderColor:
+                  priority === "Urgent"
+                    ? "urgent.main"
+                    : priority === "High"
+                      ? "error.main"
+                      : priority === "Medium"
+                        ? "info.main"
+                        : priority === "Low"
+                          ? "#94A3B8"
+                          : "grey.400",
+                color:
+                  priority === "Urgent"
+                    ? "urgent.main"
+                    : priority === "High"
+                      ? "error.main"
+                      : priority === "Medium"
+                        ? "info.main"
+                        : priority === "Low"
+                          ? "#94A3B8"
+                          : "grey.400",
+                borderRadius: 2,
+                px: 1,
+                width: "1005",
+              }}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <MenuItem value="Urgent">Urgent</MenuItem>
+              <MenuItem value="High">High</MenuItem>
+              <MenuItem value="Medium">Medium</MenuItem>
+              <MenuItem value="Low">Low</MenuItem>
+            </Select>
+            <Typography
+              variant="caption"
+              sx={{
+                color: "text.secondary",
+                fontWeight: "bold",
+              }}
+            >
+              Due Date
+            </Typography>
+
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                value={dueDate}
+                onChange={(value) => setDueDate(value)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    fullWidth: true,
+                  },
+                }}
+              />
+            </LocalizationProvider>
 
             <Button
               variant="contained"
               sx={{ bgcolor: "success.main" }}
               onClick={handleUpdate}
             >
-              {updateStatusMutation.isPending ? "Updating..." : "Update"}
+              {updateMutation.isPending ? "Updating..." : "Update"}
             </Button>
             <Divider />
-            <Box
+            {/* <Box
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
@@ -512,7 +733,7 @@ function IssueDetail() {
                   ? new Date(issue.createdAt).toLocaleDateString()
                   : "-"}
               </Typography>
-            </Box>
+            </Box> */}
           </Box>
         </Paper>
       </Grid>
